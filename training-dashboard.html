@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trainings-Dashboard</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --bg-soft: #0f1c31;
+      --card: rgba(255,255,255,.08);
+      --card-strong: rgba(255,255,255,.12);
+      --text: #edf4ff;
+      --muted: #aebcd0;
+      --primary: #6ee7b7;
+      --primary-2: #38bdf8;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+      --border: rgba(255,255,255,.14);
+      --shadow: 0 24px 70px rgba(0,0,0,.35);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.22), transparent 33rem),
+        radial-gradient(circle at 85% 10%, rgba(110,231,183,.18), transparent 28rem),
+        linear-gradient(135deg, #07101c 0%, #0b1324 54%, #06101d 100%);
+      min-height: 100vh;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .page { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 54px; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 58px);
+      border: 1px solid var(--border);
+      border-radius: 34px;
+      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.045));
+      backdrop-filter: blur(18px);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -110px auto;
+      width: 310px;
+      height: 310px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(110,231,183,.34), transparent 68%);
+      pointer-events: none;
+    }
+    .eyebrow { color: var(--primary); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 12px 0 12px; max-width: 760px; font-size: clamp(2.2rem, 6vw, 5rem); line-height: .96; letter-spacing: -.06em; }
+    .hero p { margin: 0; max-width: 730px; color: var(--muted); font-size: clamp(1rem, 2vw, 1.18rem); line-height: 1.65; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 30px; }
+    .stat { padding: 18px; border: 1px solid var(--border); border-radius: 20px; background: rgba(8,17,31,.48); }
+    .stat strong { display: block; font-size: 1.6rem; }
+    .stat span { color: var(--muted); font-size: .88rem; }
+
+    .section { margin-top: 26px; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(255,255,255,.065); box-shadow: 0 16px 44px rgba(0,0,0,.18); }
+    .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    h2 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    .hint { margin: 6px 0 0; color: var(--muted); line-height: 1.5; }
+
+    .plan-buttons { display:flex; flex-wrap:wrap; gap:10px; }
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 11px 16px;
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      transition: transform .18s, border-color .18s, background .18s;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(110,231,183,.55); }
+    .btn.active, .btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #04111e; border-color: transparent; font-weight: 800; }
+    .btn.danger { color: #fff; border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.15); }
+
+    .plan-grid, .exercise-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .day-card, .exercise-card { border:1px solid var(--border); background: var(--card); border-radius: 22px; padding: 18px; }
+    .day-card h3, .exercise-card h3 { margin:0 0 10px; }
+    .day-card ol { margin:0; padding-left: 22px; color: var(--muted); line-height:1.85; }
+    .badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 10px; background: rgba(110,231,183,.12); color: var(--primary); font-size:.82rem; font-weight:800; }
+    .meta { color: var(--muted); font-size:.92rem; line-height:1.45; }
+    .values { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin:14px 0; }
+    .value { padding:10px; border-radius:16px; background: rgba(8,17,31,.48); }
+    .value b { display:block; font-size:1.13rem; }
+    .value small { color: var(--muted); }
+
+    .recommendation { display:flex; gap:14px; align-items:flex-start; border-left:4px solid var(--primary); background: rgba(110,231,183,.1); }
+    .recommendation strong { color: var(--primary); }
+
+    form { display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; align-items:end; }
+    label { display:grid; gap:7px; color: var(--muted); font-size:.9rem; }
+    label.wide { grid-column: span 2; }
+    input, select {
+      width:100%; border:1px solid var(--border); border-radius:14px; padding:12px 13px;
+      background: rgba(5,12,24,.76); color: var(--text); outline:none;
+    }
+    input:focus, select:focus { border-color: var(--primary-2); box-shadow: 0 0 0 3px rgba(56,189,248,.16); }
+    .form-actions { display:flex; gap:10px; grid-column: span 2; }
+    .toast { min-height: 24px; color: var(--primary); font-weight: 800; margin-top: 12px; }
+
+    .history-list { display:grid; gap:10px; }
+    .history-item { display:grid; grid-template-columns: 1fr 1.3fr repeat(4, .75fr); gap:10px; align-items:center; padding:13px; border:1px solid var(--border); border-radius:16px; background: rgba(8,17,31,.38); }
+    .history-item span { color: var(--muted); }
+    .empty { color: var(--muted); padding: 16px; border:1px dashed var(--border); border-radius:16px; text-align:center; }
+
+    @media (max-width: 820px) {
+      .stats, .values { grid-template-columns: 1fr; }
+      .section-head { align-items:flex-start; flex-direction:column; }
+      form { grid-template-columns: 1fr; }
+      label.wide, .form-actions { grid-column: auto; }
+      .history-item { grid-template-columns: 1fr; gap:4px; }
+      .history-item::before { content: attr(data-title); font-weight: 800; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">Trainings-Dashboard</div>
+      <h1>Dein Oberkörper-Plan mit echten Fortschrittswerten.</h1>
+      <p>Wechsle zwischen 2, 3 oder 4 Trainingstagen pro Woche, pflege deine aktuellen Werte und behalte die letzten Einheiten direkt im Browser im Blick.</p>
+      <div class="stats">
+        <div class="stat"><strong id="statExercises">9</strong><span>Übungen im Plan</span></div>
+        <div class="stat"><strong id="statPlan">3 Tage</strong><span>Aktiver Wochenplan</span></div>
+        <div class="stat"><strong id="statLast">Noch kein Eintrag</strong><span>Letzter Trainingseintrag</span></div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-head">
+        <div><h2>Plan-Auswahl</h2><p class="hint">Wähle, wie oft du diese Woche trainierst. Die Auswahl bleibt gespeichert.</p></div>
+        <div class="plan-buttons" id="planButtons"></div>
+      </div>
+      <div class="plan-grid" id="planGrid"></div>
+    </section>
+
+    <section class="section recommendation">
+      <div>💡</div>
+      <div><strong>Progression:</strong> Sammle zuerst Wiederholungen im Zielbereich. Erhöhe das Gewicht erst, wenn du die obere Grenze sauber und kontrolliert erreichst. Bei Seitheben und Butterfly Reverse zählt Technik mehr als Gewicht.</div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Aktuelle Werte</h2><p class="hint">Alle Übungen mit deinem zuletzt gespeicherten Stand.</p></div></div>
+      <div class="exercise-grid" id="exerciseGrid"></div>
+    </section>
+
+    <section class="section" id="pflege">
+      <div class="section-head"><div><h2>Werte pflegen</h2><p class="hint">Wiederholungen dürfen auch als Text eingegeben werden, z. B. 8/7/6.</p></div></div>
+      <form id="entryForm">
+        <label class="wide">Übung<select id="exerciseSelect" required></select></label>
+        <label>Datum<input id="dateInput" type="date" required /></label>
+        <label>Gewicht (kg)<input id="weightInput" type="number" min="0" step="0.5" required /></label>
+        <label>Sätze<input id="setsInput" type="number" min="1" step="1" required /></label>
+        <label>Wiederholungen<input id="repsInput" type="text" required placeholder="8/7/6" /></label>
+        <label class="wide">Gefühl/Anstrengung<select id="effortInput" required><option>leicht</option><option>mittel</option><option>schwer</option><option>nah am Muskelversagen</option></select></label>
+        <div class="form-actions"><button class="btn primary" type="submit">Speichern</button><button class="btn" type="button" id="resetForm">Zurücksetzen</button></div>
+      </form>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Trainingshistorie</h2><p class="hint">Die neuesten 15 Einträge werden angezeigt.</p></div><button class="btn danger" id="clearHistory">Historie löschen</button></div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'trainingDashboardState.v1';
+    const today = () => new Date().toISOString().slice(0, 10);
+
+    const exercises = [
+      { name:'Brustpresse', muscles:'Brust, Trizeps, vordere Schulter', weight:13, sets:3, reps:'6', target:'8-12' },
+      { name:'Butterfly', muscles:'Brust', weight:12, sets:3, reps:'8', target:'10-15' },
+      { name:'Latzug', muscles:'Rücken breit, Bizeps', weight:19, sets:3, reps:'7', target:'8-12' },
+      { name:'Ruderzugmaschine', muscles:'Rücken Mitte, Bizeps', weight:13, sets:3, reps:'8', target:'8-12' },
+      { name:'Butterfly Reverse', muscles:'hintere Schulter, oberer Rücken', weight:8, sets:3, reps:'6', target:'10-15' },
+      { name:'Schulterpresse', muscles:'Schulter, Trizeps', weight:9, sets:3, reps:'8', target:'8-12' },
+      { name:'Seitheben', muscles:'seitliche Schulter', weight:6, sets:3, reps:'8', target:'10-15' },
+      { name:'Trizepsmaschine', muscles:'Trizeps', weight:19, sets:3, reps:'8', target:'10-15' },
+      { name:'Bizepsmaschine', muscles:'Bizeps', weight:6, sets:3, reps:'8', target:'10-15' }
+    ];
+
+    const plans = {
+      2: [{ title:'Tag 1: Oberkörper komplett', items:['Brustpresse','Latzug','Schulterpresse','Ruderzugmaschine','Butterfly','Seitheben','Butterfly Reverse','Trizepsmaschine','Bizepsmaschine'] }, { title:'Tag 2: Oberkörper komplett', items:['Ruderzugmaschine','Brustpresse','Latzug','Schulterpresse','Butterfly Reverse','Butterfly','Seitheben','Bizepsmaschine','Trizepsmaschine'] }],
+      3: [{ title:'Tag 1: Push', items:['Brustpresse','Schulterpresse','Butterfly','Seitheben','Trizepsmaschine'] }, { title:'Tag 2: Pull', items:['Latzug','Ruderzugmaschine','Butterfly Reverse','Bizepsmaschine'] }, { title:'Tag 3: Oberkörper komplett', items:['Brustpresse','Ruderzugmaschine','Latzug','Schulterpresse','Seitheben','Butterfly','Butterfly Reverse','Trizepsmaschine','Bizepsmaschine'] }],
+      4: [{ title:'Tag 1: Push A', items:['Brustpresse','Schulterpresse','Butterfly','Seitheben','Trizepsmaschine'] }, { title:'Tag 2: Pull A', items:['Latzug','Ruderzugmaschine','Butterfly Reverse','Bizepsmaschine'] }, { title:'Tag 3: Push B', items:['Schulterpresse','Brustpresse','Seitheben','Butterfly','Trizepsmaschine'] }, { title:'Tag 4: Pull B', items:['Ruderzugmaschine','Latzug','Butterfly Reverse','Bizepsmaschine'] }]
+    };
+
+    const defaultState = () => ({ activePlan: 3, values: Object.fromEntries(exercises.map(e => [e.name, { ...e, date:'-', effort:'mittel' }])), history: [] });
+    let state = loadState();
+
+    function loadState() { try { return { ...defaultState(), ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; } catch { return defaultState(); } }
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    const byId = id => document.getElementById(id);
+
+    function render() { renderStats(); renderPlanButtons(); renderPlan(); renderExercises(); renderSelect(); renderHistory(); }
+    function renderStats() {
+      byId('statExercises').textContent = exercises.length;
+      byId('statPlan').textContent = state.activePlan + ' Tage';
+      byId('statLast').textContent = state.history[0] ? `${formatDate(state.history[0].date)} · ${state.history[0].exercise}` : 'Noch kein Eintrag';
+    }
+    function renderPlanButtons() {
+      byId('planButtons').innerHTML = [2,3,4].map(days => `<button class="btn ${state.activePlan===days?'active':''}" data-plan="${days}">${days} Tage</button>`).join('');
+      document.querySelectorAll('[data-plan]').forEach(btn => btn.onclick = () => { state.activePlan = Number(btn.dataset.plan); saveState(); render(); });
+    }
+    function renderPlan() {
+      byId('planGrid').innerHTML = plans[state.activePlan].map(day => `<article class="day-card"><span class="badge">${state.activePlan}x pro Woche</span><h3>${day.title}</h3><ol>${day.items.map(item => `<li>${item}</li>`).join('')}</ol></article>`).join('');
+    }
+    function renderExercises() {
+      byId('exerciseGrid').innerHTML = exercises.map(ex => {
+        const v = state.values[ex.name] || ex;
+        return `<article class="exercise-card"><span class="badge">Ziel ${ex.target} Wdh.</span><h3>${ex.name}</h3><div class="meta">${ex.muscles}</div><div class="values"><div class="value"><b>${v.weight} kg</b><small>Gewicht</small></div><div class="value"><b>${v.sets}</b><small>Sätze</small></div><div class="value"><b>${v.reps}</b><small>Wdh.</small></div></div><p class="meta">Letzter Eintrag: <b>${formatDate(v.date)}</b><br>Gefühl: <b>${v.effort || 'mittel'}</b></p><button class="btn primary" onclick="editExercise('${ex.name}')">Werte pflegen</button></article>`;
+      }).join('');
+    }
+    function renderSelect() {
+      const current = byId('exerciseSelect').value;
+      byId('exerciseSelect').innerHTML = exercises.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+      if (current) byId('exerciseSelect').value = current;
+    }
+    function renderHistory() {
+      const rows = state.history.slice(0, 15);
+      byId('historyList').innerHTML = rows.length ? rows.map(h => `<div class="history-item" data-title="${h.exercise}"><strong>${formatDate(h.date)}</strong><span>${h.exercise}</span><span>${h.weight} kg</span><span>${h.sets} Sätze</span><span>${h.reps} Wdh.</span><span>${h.effort}</span></div>`).join('') : '<div class="empty">Noch keine Trainingseinträge gespeichert.</div>';
+    }
+    function formatDate(date) { if (!date || date === '-') return '-'; return new Date(date + 'T00:00:00').toLocaleDateString('de-DE'); }
+
+    window.editExercise = function(name) {
+      const v = state.values[name];
+      byId('exerciseSelect').value = name; byId('dateInput').value = v.date && v.date !== '-' ? v.date : today(); byId('weightInput').value = v.weight; byId('setsInput').value = v.sets; byId('repsInput').value = v.reps; byId('effortInput').value = v.effort || 'mittel';
+      byId('pflege').scrollIntoView({ behavior:'smooth', block:'start' });
+    };
+
+    byId('entryForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const entry = { exercise: byId('exerciseSelect').value, date: byId('dateInput').value, weight: Number(byId('weightInput').value), sets: Number(byId('setsInput').value), reps: byId('repsInput').value.trim(), effort: byId('effortInput').value, savedAt: new Date().toISOString() };
+      state.values[entry.exercise] = { ...state.values[entry.exercise], ...entry };
+      state.history.unshift(entry);
+      saveState(); render(); showToast('Gespeichert: ' + entry.exercise);
+    });
+
+    byId('exerciseSelect').addEventListener('change', e => editExercise(e.target.value));
+    byId('resetForm').addEventListener('click', () => editExercise(byId('exerciseSelect').value));
+    byId('clearHistory').addEventListener('click', () => { if (confirm('Trainingshistorie wirklich löschen? Aktuelle Werte bleiben erhalten.')) { state.history = []; saveState(); render(); showToast('Historie gelöscht.'); } });
+    function showToast(msg) { byId('toast').textContent = msg; setTimeout(() => byId('toast').textContent = '', 2600); }
+
+    byId('dateInput').value = today();
+    render();
+    editExercise(exercises[0].name);
+  </script>
+</body>
+</html>
