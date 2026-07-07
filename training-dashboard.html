@@ -88,6 +88,21 @@
     .day-card, .exercise-card { border:1px solid var(--border); background: var(--card); border-radius: 22px; padding: 18px; }
     .day-card h3, .exercise-card h3 { margin:0 0 10px; }
     .day-card ol { margin:0; padding-left: 22px; color: var(--muted); line-height:1.85; }
+    .day-card li { padding: 4px 0; }
+    .plan-exercise { display: inline; }
+    .plan-value {
+      display: inline-block;
+      margin-left: 8px;
+      border: 1px solid rgba(110,231,183,.24);
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: rgba(110,231,183,.1);
+      color: var(--primary);
+      font-size: .82rem;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
     .badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 10px; background: rgba(110,231,183,.12); color: var(--primary); font-size:.82rem; font-weight:800; }
     .meta { color: var(--muted); font-size:.92rem; line-height:1.45; }
     .values { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin:14px 0; }
@@ -215,7 +230,7 @@
       document.querySelectorAll('[data-plan]').forEach(btn => btn.onclick = () => { state.activePlan = Number(btn.dataset.plan); saveState(); render(); });
     }
     function renderPlan() {
-      byId('planGrid').innerHTML = plans[state.activePlan].map(day => `<article class="day-card"><span class="badge">${state.activePlan}x pro Woche</span><h3>${day.title}</h3><ol>${day.items.map(item => `<li>${item}</li>`).join('')}</ol></article>`).join('');
+      byId('planGrid').innerHTML = plans[state.activePlan].map(day => `<article class="day-card"><span class="badge">${state.activePlan}x pro Woche</span><h3>${day.title}</h3><ol>${day.items.map(item => `<li><span class="plan-exercise">${item} <strong class="plan-value">${formatPlanValue(item)}</strong></span></li>`).join('')}</ol></article>`).join('');
     }
     function renderExercises() {
       byId('exerciseGrid').innerHTML = exercises.map(ex => {
@@ -233,6 +248,10 @@
       byId('historyList').innerHTML = rows.length ? rows.map(h => `<div class="history-item" data-title="${h.exercise}"><strong>${formatDate(h.date)}</strong><span>${h.exercise}</span><span>${h.weight} kg</span><span>${h.sets} Sätze</span><span>${h.reps} Wdh.</span><span>${h.effort}</span></div>`).join('') : '<div class="empty">Noch keine Trainingseinträge gespeichert.</div>';
     }
     function formatDate(date) { if (!date || date === '-') return '-'; return new Date(date + 'T00:00:00').toLocaleDateString('de-DE'); }
+    function formatPlanValue(name) {
+      const current = state.values[name] || exercises.find(ex => ex.name === name);
+      return `${current.weight}-${current.sets}-${current.reps}`;
+    }
 
     window.editExercise = function(name) {
       const v = state.values[name];
